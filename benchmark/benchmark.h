@@ -26,5 +26,8 @@ CCA_MARKER(0x10A); \
 #define CCA_SMC_MONITOR_CALL() \
 CCA_MARKER(0x10B); \
 
+#define CCA_RTT_WALK()\
+CCA_MARKER(0x200); \
+
 #endif
 

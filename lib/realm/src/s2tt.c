@@ -346,6 +346,7 @@ void rtt_walk_lock_unlock(struct granule *g_root,
 			  long level,
 			  struct rtt_walk *wi)
 {
+	CCA_RTT_WALK();
 	struct granule *g_tbls[NR_RTT_LEVELS] = { NULL };
 	unsigned long sl_idx;
 	int i, last_level;
