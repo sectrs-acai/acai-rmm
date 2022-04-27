@@ -9,6 +9,7 @@
 .globl monitor_call_with_res
 
 func monitor_call
+	mov XZR, #0x10B
 	/* As this is a function call, the arguments must already be in
 	 * place in accordance to SMCCC.
 	 */
@@ -27,6 +28,7 @@ endfunc monitor_call
  * The return args are also copied to smc_result data structure.
  */
 func monitor_call_with_res
+	mov XZR, #0x10B
 	/*
 	 * Push the value of x7 to the stack, as the SMC might change the
 	 * content. (push two registers to maintain 16 bit aligned stack)
