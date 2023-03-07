@@ -15,6 +15,15 @@
 #include <stddef.h>
 #include <string.h>
 #include <table.h>
+#include <debug.h>
+
+//TODO(Supraja) : move these to a header file as macros 
+unsigned long measure_flag(unsigned long flags){
+	return (flags & 0x00000001);
+}
+unsigned long dev_attach_flag(unsigned long flags){
+	return (flags & 0x00000002);
+}
 
 /*
  * Validate the map_addr value passed to RMI_RTT_* and RMI_DATA_* commands.
@@ -898,7 +907,23 @@ static unsigned long data_create(unsigned long data_addr,
 		}
 
 
-		data_granule_measure(rd, data, map_addr, flags);
+		//Pertie 
+		if(dev_attach_flag(flags)){
+			for(int i = 8; i <= 15; i++){
+				ERROR("data %d %x \n", i, ((char *)data)[i]);
+			}
+			//TODO[Supraja]: parse data granule 
+			//TODO[Supraja]: check ipa and pa mappings exist in the translation tables based on sizes for each bar region 
+			//TODO[Supraja]: make smc call to attach device 
+
+			//TODO[Supraja]: remove this-just testing now. 
+			//data_addr : pa map_addr: ipa
+			ERROR("granule to NSP %lu", smc_granule_delegate_dev(data_addr));
+			g_data->nsp = true;
+						ERROR("Done %d\n\n\n", g_data->nsp);
+
+		}
+		data_granule_measure(rd, data, map_addr, measure_flag(flags));
 
 		buffer_unmap(data);
 	}
@@ -933,8 +958,7 @@ unsigned long smc_data_create(unsigned long data_addr,
 {
 	struct granule *g_src;
 	unsigned long ret;
-
-	if (flags != RMI_NO_MEASURE_CONTENT && flags != RMI_MEASURE_CONTENT) {
+	if (measure_flag(flags) != RMI_NO_MEASURE_CONTENT && measure_flag(flags) != RMI_MEASURE_CONTENT) {
 		return RMI_ERROR_INPUT;
 	}
 
@@ -958,6 +982,7 @@ unsigned long smc_data_create_unknown(unsigned long data_addr,
 unsigned long smc_data_destroy(unsigned long rd_addr,
 			       unsigned long map_addr)
 {
+
 	struct granule *g_data;
 	struct granule *g_rd;
 	struct granule *g_table_root;
@@ -998,7 +1023,6 @@ unsigned long smc_data_destroy(unsigned long rd_addr,
 		ret = pack_return_code(RMI_ERROR_RTT, wi.last_level);
 		goto out_unlock_ll_table;
 	}
-
 	s2tt = granule_map(wi.g_llt, SLOT_RTT);
 	s2tte = s2tte_read(&s2tt[wi.index]);
 
@@ -1038,7 +1062,7 @@ unsigned long smc_data_destroy(unsigned long rd_addr,
 	 * transition to or from GRANULE_STATE_DATA for granule address can happen.
 	 */
 	g_data = find_lock_granule(data_addr, GRANULE_STATE_DATA);
-	assert(g_data);
+	assert(g_data != NULL);
 	granule_memzero(g_data, SLOT_DELEGATED);
 	granule_unlock_transition(g_data, GRANULE_STATE_DELEGATED);
 
@@ -1048,7 +1072,6 @@ out_unmap_ll_table:
 	buffer_unmap(s2tt);
 out_unlock_ll_table:
 	granule_unlock(wi.g_llt);
-
 	return ret;
 }
 

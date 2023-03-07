@@ -211,6 +211,8 @@ struct granule {
 	 *    access.
 	 */
 	unsigned long refcount;
+	//TODO[Supraja] : if we decide to remove per-core GPT and GPT change on context switches this is not required anymore. 
+	bool nsp;
 };
 
 #endif /* GRANULE_TYPES_H */
