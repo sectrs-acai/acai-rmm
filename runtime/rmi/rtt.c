@@ -913,14 +913,14 @@ static unsigned long data_create(unsigned long data_addr,
 				ERROR("data %d %x \n", i, ((char *)data)[i]);
 			}
 			//TODO[Supraja]: parse data granule 
+
 			//TODO[Supraja]: check ipa and pa mappings exist in the translation tables based on sizes for each bar region 
+			
 			//TODO[Supraja]: make smc call to attach device 
 
 			//TODO[Supraja]: remove this-just testing now. 
 			//data_addr : pa map_addr: ipa
-			ERROR("granule to NSP %lu", smc_granule_delegate_dev(data_addr));
-			g_data->nsp = true;
-						ERROR("Done %d\n\n\n", g_data->nsp);
+			ERROR("granule to NSP %lu", smc_granule_delegate_dev(g_data, data_addr));
 
 		}
 		data_granule_measure(rd, data, map_addr, measure_flag(flags));

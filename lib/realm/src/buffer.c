@@ -266,7 +266,9 @@ void *granule_map(struct granule *g, enum buffer_slot slot)
 
 	assert(is_realm_slot(slot));
 
+	// return buffer_arch_map(slot, addr, g->nsp); Pertie : we don't need this if we don't change gpt on context switches for the cores
 	return buffer_arch_map(slot, addr, false);
+
 }
 
 void buffer_unmap(void *buf)

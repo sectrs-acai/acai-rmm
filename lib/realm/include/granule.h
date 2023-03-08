@@ -13,7 +13,10 @@
 #include <memory.h>
 #include <spinlock.h>
 #include <status.h>
-unsigned long smc_granule_delegate_dev(unsigned long addr);
+/*
+*The caller should hold a lock on the granule
+*/
+unsigned long smc_granule_delegate_dev(struct granule *g, unsigned long addr);
 
 static inline unsigned long granule_refcount_read_relaxed(struct granule *g)
 {

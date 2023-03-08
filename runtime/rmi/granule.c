@@ -27,27 +27,17 @@ unsigned long smc_granule_delegate(unsigned long addr)
 	return RMI_SUCCESS;
 }
 
-unsigned long smc_granule_delegate_dev(unsigned long addr)
+unsigned long smc_granule_delegate_dev(struct granule *g, unsigned long addr)
 {
-	// struct granule *g;
-	//TODO[Supraja]: if this call comes from data create then the lock is already acquired. If not get lock by uncommenting code below
-	
-	//  g = find_lock_granule(addr, GRANULE_STATE_DATA);
-	// if (g == NULL) {
-	// 	return RMI_ERROR_INPUT;
-	// }
-
-	// //granule_set_state(g, GRANULE_STATE_DELEGATED);
 	asc_mark_secure_dev(addr);
-	// //granule_memzero(g, SLOT_DELEGATED);
-	// granule_unlock(g);
+	//TODO[Supraja] : remove this later if we definitely don't need to maintain state
+	g->nsp = true;
 	return RMI_SUCCESS;
 }
 
 unsigned long smc_granule_undelegate(unsigned long addr)
 {
 	struct granule *g;
-
 	g = find_lock_granule(addr, GRANULE_STATE_DELEGATED);
 	if (g == NULL) {
 		return RMI_ERROR_INPUT;
