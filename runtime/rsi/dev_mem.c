@@ -7,9 +7,15 @@
 #include <string.h>
 #include <debug.h>
 
+/*
+    reg[1] : IPA 
+    reg[2] : 1 for delegate (NS -> Realm) 0 for undelegate (Realm -> NS)
+*/
 struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rmi_rec_exit *rec_exit){
 	    struct rsi_delegate_dev_mem_result res = { { false, 0UL } };
         unsigned long ipa = rec->regs[1];
+        unsigned long delegate_flag = rec->regs[2];
+
 		struct rd *rd;
 		enum s2_walk_status walk_status;
 		struct s2_walk_result walk_res;
@@ -51,7 +57,7 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 		granule_lock(gr, GRANULE_STATE_DATA);
 
 		//Make SMC call to delegate dev pas on the granule now
-		smc_granule_delegate_dev(gr, walk_res.pa);
+		smc_granule_delegate_dev(gr, walk_res.pa, delegate_flag);
 
         //TODO[Supraja, Benedict] : add smc call to create S2 table entry for SMMU. 
 		granule_unlock(gr);

@@ -7,6 +7,6 @@
 
 void asc_mark_secure(unsigned long addr);
 void asc_mark_nonsecure(unsigned long addr);
-void asc_mark_secure_dev(unsigned long addr);
+void asc_mark_secure_dev(unsigned long addr, unsigned long delegate_flag);
 
 #endif /* ASC_H */

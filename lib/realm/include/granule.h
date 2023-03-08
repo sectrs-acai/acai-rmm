@@ -16,7 +16,7 @@
 /*
 *The caller should hold a lock on the granule
 */
-unsigned long smc_granule_delegate_dev(struct granule *g, unsigned long addr);
+unsigned long smc_granule_delegate_dev(struct granule *g, unsigned long addr, unsigned long delegate_flag);
 
 static inline unsigned long granule_refcount_read_relaxed(struct granule *g)
 {
