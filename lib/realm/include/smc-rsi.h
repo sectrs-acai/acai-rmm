@@ -174,4 +174,6 @@ COMPILER_ASSERT(offsetof(struct rsi_host_call,
  */
 #define SMC_RSI_HOST_CALL		SMC64_RSI_FID(U(0x9))
 
+#define SMC_RSI_DEV_MEM		SMC64_RSI_FID(U(0xA))
+
 #endif /* SMC_RSI_H */

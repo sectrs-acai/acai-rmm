@@ -55,7 +55,7 @@ static int print_entry(unsigned int id, unsigned long args[5],
 	int cnt __unused;
 
 	switch (id) {
-	case SMC_RSI_ABI_VERSION ... SMC_RSI_HOST_CALL:
+	case SMC_RSI_ABI_VERSION ... SMC_RSI_DEV_MEM:
 
 		if (rsi_logger[id - SMC_RSI_ABI_VERSION] != NULL) {
 			cnt = snprintf(name, sizeof(name), "%s%s", "SMC_RSI_",
@@ -119,7 +119,7 @@ void rsi_log_on_exit(unsigned int function_id, unsigned long args[5],
 	/* Print result when execution continues in REC */
 	if (exit_to_rec) {
 		if ((function_id >= SMC_RSI_MEASUREMENT_READ) &&
-		    (function_id <= SMC_RSI_HOST_CALL)) {
+		    (function_id <= SMC_RSI_DEV_MEM)) {
 			/* Print status */
 			cnt = print_status(buf_ptr, buf_len, res);
 		} else {

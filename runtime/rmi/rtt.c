@@ -909,9 +909,9 @@ static unsigned long data_create(unsigned long data_addr,
 
 		//Pertie 
 		if(dev_attach_flag(flags)){
-			for(int i = 8; i <= 15; i++){
-				ERROR("data %d %x \n", i, ((char *)data)[i]);
-			}
+			// for(int i = 8; i <= 15; i++){
+			// 	ERROR("data %d %x \n", i, ((char *)data)[i]);
+			// }
 			//TODO[Supraja]: parse data granule 
 
 			//TODO[Supraja]: check ipa and pa mappings exist in the translation tables based on sizes for each bar region 
@@ -920,7 +920,7 @@ static unsigned long data_create(unsigned long data_addr,
 
 			//TODO[Supraja]: remove this-just testing now. 
 			//data_addr : pa map_addr: ipa
-			ERROR("granule to NSP %lu", smc_granule_delegate_dev(g_data, data_addr));
+			// ERROR("granule to NSP %lu", smc_granule_delegate_dev(g_data, data_addr));
 
 		}
 		data_granule_measure(rd, data, map_addr, measure_flag(flags));
@@ -936,7 +936,6 @@ static unsigned long data_create(unsigned long data_addr,
 
 	s2tte_write(&s2tt[wi.index], s2tte);
 	__granule_get(wi.g_llt);
-
 	ret = RMI_SUCCESS;
 
 out_unmap_ll_table:
