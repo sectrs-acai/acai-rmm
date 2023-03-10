@@ -18,6 +18,7 @@
 */
 unsigned long smc_granule_delegate_dev(struct granule *g, unsigned long addr, unsigned long delegate_flag, unsigned long iova);
 unsigned long smc_add_page_to_smmu_tables(unsigned long phys_addr, unsigned long iova, unsigned int sid);
+unsigned long smc_attach_dev(unsigned long addr);
 
 static inline unsigned long granule_refcount_read_relaxed(struct granule *g)
 {
