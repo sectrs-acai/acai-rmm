@@ -824,6 +824,131 @@ static unsigned long validate_data_create(unsigned long map_addr,
 	return validate_data_create_unknown(map_addr, rd);
 }
 
+void read_bar_sizes(char* data, unsigned long *res){
+	int start = 20;
+	for(int i = 0; i < 6; i++){
+		unsigned long size = 0;
+		for(int j = 0; j < 4; j++){
+			size = (size << 8) + data[start + j + (i * 4)];
+		}
+		res[i] = size;
+	}
+}
+void read_ipa_pa(char* data, unsigned long *bar_ipa, unsigned long *bar_pa){
+	int start = 48;
+	for(int i = 0; i < 6; i++){
+		unsigned long ipa = 0;
+		unsigned long pa = 0;
+
+		for(int j = 0; j < 8; j++){
+			ipa = (ipa << 8) + data[start + j + (i * 16)];
+			pa = (pa << 8) + data[start + (j+8) + (i * 16)];
+		}
+
+		bar_ipa[i] = ipa;
+		bar_pa[i] = pa;
+	}
+}
+unsigned long do_full_table_walk_check(unsigned long rd_addr,
+			       unsigned long map_addr[], unsigned long expected_pa[], int n){
+	struct granule *g_rd;
+	struct granule *g_table_root;
+	struct rtt_walk wi;
+	unsigned long s2tte, *s2tt;
+	struct rd *rd;
+	unsigned long ipa_bits;
+	unsigned long ret;
+	bool valid;
+	int sl;
+
+	g_rd = find_lock_granule(rd_addr, GRANULE_STATE_RD);
+	if (g_rd == NULL) {
+		return RMI_ERROR_INPUT;
+	}
+
+	rd = granule_map(g_rd, SLOT_RD);
+	for(int i = 0; i < n ; i++){
+		if (!validate_map_addr(map_addr[i], RTT_PAGE_LEVEL, rd)) {
+			buffer_unmap(rd);
+			granule_unlock(g_rd);
+			return RMI_ERROR_INPUT;
+		}
+	}
+
+	g_table_root = rd->s2_ctx.g_rtt;
+	sl = realm_rtt_starting_level(rd);
+	ipa_bits = realm_ipa_bits(rd);
+	// s2_ctx = rd->s2_ctx;
+	buffer_unmap(rd);
+
+	for(int i = 0; i < n ; i++){
+		granule_lock(g_table_root, GRANULE_STATE_RTT);
+		granule_unlock(g_rd);
+
+		rtt_walk_lock_unlock(g_table_root, sl, ipa_bits,
+					map_addr[i], RTT_PAGE_LEVEL, &wi);
+		if (wi.last_level != RTT_PAGE_LEVEL) {
+			ret = pack_return_code(RMI_ERROR_RTT, wi.last_level);
+					granule_unlock(wi.g_llt);
+
+			return ret;
+		}
+		s2tt = granule_map(wi.g_llt, SLOT_RTT);
+		s2tte = s2tte_read(&s2tt[wi.index]);
+
+		valid = s2tte_is_valid(s2tte, RTT_PAGE_LEVEL);
+
+		/*
+		* Check if either HIPAS=ASSIGNED or map_addr is a
+		* valid Protected IPA.
+		*/
+		if (!valid && !s2tte_is_assigned(s2tte, RTT_PAGE_LEVEL)) {
+			ret = pack_return_code(RMI_ERROR_RTT, RTT_PAGE_LEVEL);
+			buffer_unmap(s2tt);
+			return ret;
+		}
+		ret = s2tte_pa(s2tte, RTT_PAGE_LEVEL);
+		if(!(ret == expected_pa[i])){
+			ERROR("Invalid mapping found. IPA %lx expected_pa %lx pa %lx", map_addr[i], expected_pa[i], ret);
+			buffer_unmap(s2tt);
+			granule_unlock(wi.g_llt);
+			return RMI_ERROR_INPUT;
+		}
+		ERROR("IPA %lx PA %lx\n", map_addr[i], ret);
+		buffer_unmap(s2tt);
+		granule_unlock(wi.g_llt);
+	}
+		
+	return 0;
+}
+
+
+unsigned int check_dev_addr_space(unsigned long rd_addr,  unsigned long bar_sizes[], unsigned long bar_ipa[], unsigned long bar_pa[]){
+	unsigned long check_ipa[1000];
+	unsigned long check_pa[1000];
+	int n = 0;
+	for(int i = 0; i < 6; i++){
+		unsigned long ipa = bar_ipa[i]; //map_addr
+		unsigned long pa = bar_pa[i];
+		for(int j = 0; j < bar_sizes[i]; j+=GRANULE_SIZE){
+			//check the ipa and pa are valid for the realm context 
+			struct granule *g_data = find_lock_granule( pa + j, GRANULE_STATE_DATA);
+			if (g_data == NULL) {
+				ERROR("Cannot lock granule at pa %lx i %d j %d \n", (pa + j), i , j);
+				return RMI_ERROR_INPUT;
+			}
+			//if we get the granule for the pa then add the pa and ipa to the check list
+
+			check_pa[n] = pa + j;
+			check_ipa[n] = ipa + j;
+			n++;
+			granule_unlock(g_data);
+		}
+	}
+	assert(n<1000);
+	return do_full_table_walk_check(rd_addr, check_ipa, check_pa, n);
+}
+
 /*
  * Implements both Data.Create and Data.CreateUnknown
  *
@@ -848,7 +973,9 @@ static unsigned long data_create(unsigned long data_addr,
 	unsigned long ret;
 	int __unused meas_ret;
 	int sl;
+	bool ns_access_ok = false;
 
+	// ERROR("Data create ipa %lx pa %lx \n", map_addr, data_addr);
 	if (!find_lock_two_granules(data_addr,
 				    GRANULE_STATE_DELEGATED,
 				    &g_data,
@@ -887,9 +1014,10 @@ static unsigned long data_create(unsigned long data_addr,
 	}
 
 	ripas = s2tte_get_ripas(s2tte);
-
+	unsigned long bar_sizes[] = {0,0,0,0,0,0};		
+	unsigned long bar_ipa[] = {0,0,0,0,0,0};
+	unsigned long bar_pa[] = {0,0,0,0,0,0};
 	if (g_src != NULL) {
-		bool ns_access_ok;
 		void *data = granule_map(g_data, SLOT_DELEGATED);
 
 		ns_access_ok = ns_buffer_read(SLOT_NS, g_src, 0U,
@@ -909,19 +1037,8 @@ static unsigned long data_create(unsigned long data_addr,
 
 		//Pertie 
 		if(dev_attach_flag(flags)){
-			// for(int i = 8; i <= 15; i++){
-			// 	ERROR("data %d %x \n", i, ((char *)data)[i]);
-			// }
-			//TODO[Supraja]: parse data granule 
-
-			//TODO[Supraja]: check ipa and pa mappings exist in the translation tables based on sizes for each bar region 
-			
-			//TODO[Supraja]: make smc call to attach device 
-
-			//TODO[Supraja]: remove this-just testing now. 
-			//data_addr : pa map_addr: ipa
-			// ERROR("granule to NSP %lu", smc_granule_delegate_dev(g_data, data_addr));
-
+			read_bar_sizes((char *)data, bar_sizes);
+			read_ipa_pa((char *)data, bar_ipa, bar_pa);
 		}
 		data_granule_measure(rd, data, map_addr, measure_flag(flags));
 
@@ -936,6 +1053,7 @@ static unsigned long data_create(unsigned long data_addr,
 
 	s2tte_write(&s2tt[wi.index], s2tte);
 	__granule_get(wi.g_llt);
+
 	ret = RMI_SUCCESS;
 
 out_unmap_ll_table:
@@ -946,6 +1064,19 @@ out_unmap_rd:
 	buffer_unmap(rd);
 	granule_unlock(g_rd);
 	granule_unlock_transition(g_data, new_data_state);
+
+
+	//TODO[Supraja] A better place for this is before the attestation is done. But this should be ok for now. 
+	if ( ns_access_ok && dev_attach_flag(flags)){
+		if(check_dev_addr_space(rd_addr, bar_sizes, bar_ipa, bar_pa) != 0){
+			//TODO[Supraja] at this point the granule is already in data state with some wrong data and the attestation is corrupted. Ideally, the Realm context should be destroyed.
+			return RMI_ERROR_INPUT;
+		}
+		
+		//TODO[Supraja]: make smc call to attach device 
+
+	}
+
 	return ret;
 }
 
