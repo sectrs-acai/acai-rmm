@@ -29,3 +29,11 @@ void asc_mark_secure_dev(unsigned long addr, unsigned long delegate_flag)
 	ret = monitor_call(SMC_ASC_MARK_SECURE_DEV, addr, delegate_flag, 0, 0, 0, 0);
 	assert(ret == 0);
 }
+
+void asc_add_translation_table(unsigned long phys_addr,unsigned long iova, unsigned int sid)
+{
+	__unused int ret;
+
+	ret = monitor_call(LINUX_RMI_MAP_PAGE, phys_addr, iova,  sid, 0, 0, 0);
+	assert(ret == 0);
+}

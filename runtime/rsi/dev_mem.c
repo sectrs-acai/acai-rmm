@@ -15,6 +15,7 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 	    struct rsi_delegate_dev_mem_result res = { { false, 0UL } };
         unsigned long ipa = rec->regs[1];
         unsigned long delegate_flag = rec->regs[2];
+		//int sid = 31;
 
 		struct rd *rd;
 		enum s2_walk_status walk_status;
@@ -57,9 +58,18 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 		granule_lock(gr, GRANULE_STATE_DATA);
 
 		//Make SMC call to delegate dev pas on the granule now
-		smc_granule_delegate_dev(gr, walk_res.pa, delegate_flag);
-
-        //TODO[Supraja, Benedict] : add smc call to create S2 table entry for SMMU. 
+		WARN("calling smc_granule_delegate_dev\n");
+		res.smc_result = smc_granule_delegate_dev(gr, walk_res.pa, delegate_flag);
+		if (res.smc_result != RSI_SUCCESS){
+			ERROR("smc_granule_delegate_dev failed\n");
+		}
+        //TODO[Supraja, Benedict] : add smc call to create S2 table entry for SMMU.
+		//Bene: done
+/* 		WARN("calling smc_add_page_to_smmu_tables\n");
+		res.smc_result = smc_add_page_to_smmu_tables(walk_res.pa, ipa, sid);
+		if (res.smc_result != RSI_SUCCESS){
+			ERROR("smc_add_page_to_smmu_tables failed\n");
+		} */
 		granule_unlock(gr);
 		granule_unlock(walk_res.llt);
 

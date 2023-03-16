@@ -528,8 +528,26 @@ static bool handle_realm_rsi(struct rec *rec, struct rmi_rec_exit *rec_exit)
 	}
 	case SMC_RSI_DEV_MEM: {
 		struct rsi_delegate_dev_mem_result res;
+		WARN("handle_rsi_dev_mem \n");
+		
 		res = handle_rsi_dev_mem(rec, rec_exit);
+		
+		rec_exit->exit_reason = RMI_EXIT_DEV_MEM;
+		ret_to_rec = false;
 		rec->regs[0] = res.smc_result;
+
+		// Do we need it ???
+		// advance_pc();
+
+		// reg[1] PA
+		// reg[2] IOVA
+		// reg[3] Stream ID
+		rec->regs[2] = rec->regs[1];
+		rec->regs[3] = 31;
+
+		for (int i = 1U; i < 4; i++) {
+			rec_exit->gprs[i] = rec->regs[i];
+		}
 
 		break;
 	}

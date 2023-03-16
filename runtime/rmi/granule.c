@@ -27,6 +27,12 @@ unsigned long smc_granule_delegate(unsigned long addr)
 	return RMI_SUCCESS;
 }
 
+unsigned long smc_add_page_to_smmu_tables(unsigned long phys_addr, unsigned long iova, unsigned int sid)
+{
+	asc_add_translation_table(phys_addr, iova, sid);
+	return RMI_SUCCESS;
+}
+
 unsigned long smc_granule_delegate_dev(struct granule *g, unsigned long addr, unsigned long delegate_flag)
 {
 	asc_mark_secure_dev(addr, delegate_flag);

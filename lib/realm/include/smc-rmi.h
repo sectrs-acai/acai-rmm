@@ -83,6 +83,8 @@
 #define RMI_EXIT_HOST_CALL		(5U)
 #define RMI_EXIT_SERROR			(6U)
 
+#define RMI_EXIT_DEV_MEM		(0xAU)
+
 /* RmiRttEntryState represents the state of an RTTE */
 #define RMI_RTT_STATE_UNASSIGNED	(0U)
 #define RMI_RTT_STATE_DESTROYED		(1U)
