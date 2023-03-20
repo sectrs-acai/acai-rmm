@@ -64,12 +64,7 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 			ERROR("smc_granule_delegate_dev failed\n");
 		}
         //TODO[Supraja, Benedict] : add smc call to create S2 table entry for SMMU.
-		//Bene: done
-/* 		WARN("calling smc_add_page_to_smmu_tables\n");
-		res.smc_result = smc_add_page_to_smmu_tables(walk_res.pa, ipa, sid);
-		if (res.smc_result != RSI_SUCCESS){
-			ERROR("smc_add_page_to_smmu_tables failed\n");
-		} */
+		// * BENE: done through the exit to HV.
 		granule_unlock(gr);
 		granule_unlock(walk_res.llt);
 
