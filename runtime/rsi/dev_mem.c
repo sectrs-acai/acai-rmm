@@ -63,6 +63,7 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 		if (res.smc_result != RSI_SUCCESS){
 			ERROR("smc_granule_delegate_dev failed\n");
 		}
+		rec->regs[1] = walk_res.pa;
         //TODO[Supraja, Benedict] : add smc call to create S2 table entry for SMMU.
 		// * BENE: done through the exit to HV.
 		granule_unlock(gr);
