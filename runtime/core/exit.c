@@ -529,25 +529,35 @@ static bool handle_realm_rsi(struct rec *rec, struct rmi_rec_exit *rec_exit)
 	case SMC_RSI_DEV_MEM: {
 		struct rsi_delegate_dev_mem_result res;
 		WARN("handle_rsi_dev_mem \n");
-		
+		WARN("IPA %lx\n",rec->regs[1]);
 		res = handle_rsi_dev_mem(rec, rec_exit);
+		WARN("PA %lx\n",rec->regs[1]);
 		
 		rec_exit->exit_reason = RMI_EXIT_DEV_MEM;
 		ret_to_rec = false;
 		rec->regs[0] = res.smc_result;
 
 		// Do we need it ???
-		// advance_pc();
-
+		// Probably yes, without it we get "invalid RSI function_id = 0" in the RMM log
+		advance_pc();
 		// reg[1] PA
 		// reg[2] IOVA
 		// reg[3] Stream ID
-		rec->regs[2] = rec->regs[1];
-		rec->regs[3] = 31;
+		rec_exit->gprs[1] = rec->regs[1]; 
+		rec_exit->gprs[2] = rec->regs[1]; 
+		rec_exit->gprs[3] = 31;
 
-		for (int i = 1U; i < 4; i++) {
-			rec_exit->gprs[i] = rec->regs[i];
-		}
+		break;
+	}
+	case _SMC_REQUEST_DEVICE_OWNERSHIP: {
+		struct rsi_delegate_dev_mem_result res;
+		WARN("handle_rsi_dev_mem \n");
+
+		// TODO: get the vmid, rec_idx is NOT the vmid.
+		res.smc_result = monitor_call(SMC_REQUEST_DEVICE_OWNERSHIP, rec->regs[1], rec->rec_idx, 0, 0, 0, 0);
+		
+		ret_to_rec = true;
+		rec->regs[0] = res.smc_result;
 
 		break;
 	}

@@ -214,9 +214,9 @@ bool handle_sysreg_access_trap(struct rec *rec, struct rmi_rec_exit *rec_exit,
 	crm = EXTRACT(ESR_EL2_SYSREG_TRAP_CRM, sysreg);
 	op2 = EXTRACT(ESR_EL2_SYSREG_TRAP_OP2, sysreg);
 
-	INFO("Unhandled %s S%u_%u_C%u_C%u_%u\n",
+/* 	INFO("Unhandled %s S%u_%u_C%u_C%u_%u\n",
 		ESR_EL2_SYSREG_IS_WRITE(esr) ? "write" : "read",
 		op0, op1, crn, crm, op2);
-
+ */
 	return true;
 }
