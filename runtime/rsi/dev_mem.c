@@ -59,13 +59,13 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 
 		//Make SMC call to delegate dev pas on the granule now
 		WARN("calling smc_granule_delegate_dev ipa: %lx | delegate_flag: %lx\n",ipa, delegate_flag);
-		res.smc_result = smc_granule_delegate_dev(gr, walk_res.pa, 1);
+		res.smc_result = smc_granule_delegate_dev(gr, walk_res.pa, delegate_flag, ipa);
 		//res.smc_result = RSI_SUCCESS;
 		if (res.smc_result != RSI_SUCCESS){
 			ERROR("smc_granule_delegate_dev failed\n");
 		}
 		// Overwrite ipa with real PA
-		rec->regs[1] = walk_res.pa;
+		rec->regs[3] = walk_res.pa;
         //TODO[Supraja, Benedict] : add smc call to create S2 table entry for SMMU.
 		// * BENE: done through the exit to HV.
 		granule_unlock(gr);

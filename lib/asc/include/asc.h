@@ -7,7 +7,7 @@
 
 void asc_mark_secure(unsigned long addr);
 void asc_mark_nonsecure(unsigned long addr);
-void asc_mark_secure_dev(unsigned long addr, unsigned long delegate_flag);
+void asc_mark_secure_dev(unsigned long addr, unsigned long delegate_flag, unsigned long iova);
 void asc_add_translation_table(unsigned long phys_addr,unsigned long iova, unsigned int sid);
 
 #endif /* ASC_H */

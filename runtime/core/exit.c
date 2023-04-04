@@ -543,8 +543,9 @@ static bool handle_realm_rsi(struct rec *rec, struct rmi_rec_exit *rec_exit)
 		// reg[1] PA
 		// reg[2] IOVA
 		// reg[3] Stream ID
-		rec_exit->gprs[1] = rec->regs[1]; 
-		rec_exit->gprs[2] = rec->regs[1]; 
+		rec_exit->gprs[1] = rec->regs[3]; 
+		// IOVA = IPA of the page, so we can trigger the testengine from within the realm.
+		rec_exit->gprs[2] = rec->regs[1];
 		rec_exit->gprs[3] = 31;
 
 		break;
@@ -558,6 +559,21 @@ static bool handle_realm_rsi(struct rec *rec, struct rmi_rec_exit *rec_exit)
 		
 		ret_to_rec = true;
 		rec->regs[0] = res.smc_result;
+
+		break;
+	}
+	case _SMC_TRIGGER_TESTENGINE: {
+		WARN("handle_trigger_testengine iova_src: 0x%lx iova_dst: 0x%lx sid: %lx \n",rec->regs[1],rec->regs[2],rec->regs[3]);
+		ret_to_rec = false;
+
+		rec_exit->exit_reason = RMI_EXIT_TRIGGER_TESTENGINE;
+		// first arg is iova src.
+		rec_exit->gprs[1] = rec->regs[1]; 
+		// second arg is iova dst.
+		rec_exit->gprs[2] = rec->regs[2];
+		// 3rd arg is sid, we fix it for now.
+		rec_exit->gprs[3] = rec->regs[3];
+		rec->regs[0] = RSI_SUCCESS;
 
 		break;
 	}

@@ -178,4 +178,6 @@ COMPILER_ASSERT(offsetof(struct rsi_host_call,
 
 #define _SMC_REQUEST_DEVICE_OWNERSHIP		SMC64_RSI_FID(U(0xB))
 
+#define _SMC_TRIGGER_TESTENGINE		SMC64_RSI_FID(U(0xC))
+
 #endif /* SMC_RSI_H */
