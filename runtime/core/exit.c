@@ -571,9 +571,13 @@ static bool handle_realm_rsi(struct rec *rec, struct rmi_rec_exit *rec_exit)
 		rec_exit->gprs[1] = rec->regs[1]; 
 		// second arg is iova dst.
 		rec_exit->gprs[2] = rec->regs[2];
-		// 3rd arg is sid, we fix it for now.
+		// 3rd arg is sid.
 		rec_exit->gprs[3] = rec->regs[3];
 		rec->regs[0] = RSI_SUCCESS;
+		// No idea why it's needed.
+		// Without it the smc will return -1, 
+		// with it the smc return the correct value.
+		advance_pc();
 
 		break;
 	}
