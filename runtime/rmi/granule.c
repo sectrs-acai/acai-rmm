@@ -14,7 +14,7 @@ unsigned long smc_granule_delegate(unsigned long addr)
 {
 	struct granule *g;
 	if (addr == 0x5000b000){
-		asc_mark_secure_dev(addr, 1);
+		asc_mark_secure_dev(addr, 1,addr);
 		return RMI_SUCCESS;
 	}
 	g = find_lock_granule(addr, GRANULE_STATE_NS);
