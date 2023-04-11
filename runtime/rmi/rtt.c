@@ -769,7 +769,6 @@ static void data_granule_measure(struct rd *rd, void *data,
 				 unsigned long flags)
 {
 	struct measurement_desc_data measure_desc = {0};
-
 	/* Initialize the measurement descriptior structure */
 	measure_desc.desc_type = MEASURE_DESC_TYPE_DATA;
 	measure_desc.len = sizeof(struct measurement_desc_data);
@@ -784,12 +783,13 @@ static void data_granule_measure(struct rd *rd, void *data,
 		 * Hashing the data granules and store the result in the
 		 * measurement descriptor structure.
 		 */
+
 		measurement_hash_compute(rd->algorithm,
 					data,
 					GRANULE_SIZE,
 					measure_desc.content);
-	}
 
+	}
 	/*
 	 * Hashing the measurement descriptor structure; the result is the
 	 * updated RIM.
@@ -798,6 +798,7 @@ static void data_granule_measure(struct rd *rd, void *data,
 			       &measure_desc,
 			       sizeof(measure_desc),
 			       rd->measurement[RIM_MEASUREMENT_SLOT]);
+
 }
 
 static unsigned long validate_data_create_unknown(unsigned long map_addr,
@@ -1016,8 +1017,9 @@ static unsigned long data_create(unsigned long data_addr,
 	unsigned long bar_sizes[] = {0,0,0,0,0,0};		
 	unsigned long bar_ipa[] = {0,0,0,0,0,0};
 	unsigned long bar_pa[] = {0,0,0,0,0,0};
+	void *data;
 	if (g_src != NULL) {
-		void *data = granule_map(g_data, SLOT_DELEGATED);
+		data = granule_map(g_data, SLOT_DELEGATED);
 
 		ns_access_ok = ns_buffer_read(SLOT_NS, g_src, 0U,
 					      GRANULE_SIZE, data);
@@ -1040,8 +1042,8 @@ static unsigned long data_create(unsigned long data_addr,
 			read_ipa_pa((char *)data, bar_ipa, bar_pa);
 		}
 		data_granule_measure(rd, data, map_addr, measure_flag(flags));
-
 		buffer_unmap(data);
+		
 	}
 
 	new_data_state = GRANULE_STATE_DATA;
@@ -1064,17 +1066,20 @@ out_unmap_rd:
 	granule_unlock(g_rd);
 	granule_unlock_transition(g_data, new_data_state);
 
-
-	//TODO[Supraja] A better place for this is before the attestation is done. But this should be ok for now. 
 	if ( ns_access_ok && dev_attach_flag(flags)){
 		if(check_dev_addr_space(rd_addr, bar_sizes, bar_ipa, bar_pa) != 0){
 			//TODO[Supraja] at this point the granule is already in data state with some wrong data and the attestation is corrupted. Ideally, the Realm context should be destroyed.
+			ERROR("dev granule checks failed");
 			return RMI_ERROR_INPUT;
 		}
-		
 		smc_attach_dev(data_addr);
+		data = granule_map(g_data, SLOT_DELEGATED);
+		rd = granule_map(g_rd, SLOT_RD);
+		data_granule_measure(rd, data, map_addr, measure_flag(flags));
+		buffer_unmap(rd);
+		buffer_unmap(data);
 	}
-
+	
 	return ret;
 }
 
