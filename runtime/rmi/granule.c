@@ -13,10 +13,7 @@
 unsigned long smc_granule_delegate(unsigned long addr)
 {
 	struct granule *g;
-	if (addr == 0x5000b000){
-		asc_mark_secure_dev(addr, 1,addr);
-		return RMI_SUCCESS;
-	}
+
 	g = find_lock_granule(addr, GRANULE_STATE_NS);
 	if (g == NULL) {
 		return RMI_ERROR_INPUT;
@@ -36,11 +33,11 @@ unsigned long smc_add_page_to_smmu_tables(unsigned long phys_addr, unsigned long
 	return RMI_SUCCESS;
 }
 
-unsigned long smc_granule_delegate_dev(struct granule *g, unsigned long addr, unsigned long delegate_flag, unsigned long iova)
+unsigned long smc_granule_delegate_dev(unsigned long addr, unsigned long delegate_flag, unsigned long iova)
 {
 	asc_mark_secure_dev(addr, delegate_flag, iova);
 	//TODO[Supraja] : remove this later if we definitely don't need to maintain state
-	g->nsp = true;
+	// g->nsp = true; We no longer need this
 	return RMI_SUCCESS;
 }
 

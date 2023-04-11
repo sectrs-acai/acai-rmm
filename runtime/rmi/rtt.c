@@ -1069,83 +1069,12 @@ out_unmap_rd:
 	if ( ns_access_ok && dev_attach_flag(flags)){
 		if(check_dev_addr_space(rd_addr, bar_sizes, bar_ipa, bar_pa) != 0){
 			//TODO[Supraja] at this point the granule is already in data state with some wrong data and the attestation is corrupted. Ideally, the Realm context should be destroyed.
-			ERROR("Wrong dev address space\n");
 			return RMI_ERROR_INPUT;
 		}
+		
 		smc_attach_dev(data_addr);
 	}
 
-	return ret;
-}
-static unsigned long create_s2_entry(unsigned long rd_addr, unsigned long pa, unsigned long ipa){
-	struct granule *g_rd;
-	struct granule *g_table_root;
-	struct rd *rd;
-	struct rtt_walk wi;
-	unsigned long s2tte, *s2tt;
-	enum ripas ripas;
-	unsigned long ipa_bits;
-	unsigned long ret;
-	int sl;
-	ERROR("S1 ");
-	ret = RMI_SUCCESS;
-	g_rd = find_lock_granule(rd_addr, GRANULE_STATE_RD);
-	if (g_rd == NULL) {
-		return RMI_ERROR_INPUT;
-	}
-	rd = granule_map(g_rd, SLOT_RD);
-	ERROR("S2 ");
-
-	g_table_root = rd->s2_ctx.g_rtt;
-		ERROR("S2.1 ");
-
-	sl = realm_rtt_starting_level(rd);
-		ERROR("S2.2 ");
-
-	ipa_bits = realm_ipa_bits(rd);
-		ERROR("S3 ");
-
-	granule_lock(g_table_root, GRANULE_STATE_RTT);
-			ERROR("S3.1 ");
-
-	rtt_walk_lock_unlock(g_table_root, sl, ipa_bits,
-			     ipa, RTT_PAGE_LEVEL, &wi);
-	ERROR("S4 ");
-
-	if (wi.last_level != RTT_PAGE_LEVEL) {
-		ret = pack_return_code(RMI_ERROR_RTT, wi.last_level);
-		ERROR("Error in 1");
-	}
-	ERROR("S5 ");
-
-	s2tt = granule_map(wi.g_llt, SLOT_RTT);
-	s2tte = s2tte_read(&s2tt[wi.index]);
-		ERROR("S6 ");
-
-	if (!s2tte_is_unassigned(s2tte)) {
-		ret = pack_return_code(RMI_ERROR_RTT, RTT_PAGE_LEVEL);
-		ERROR("Error in 2");
-	}
-	ERROR("S7 ");
-
-	ripas = s2tte_get_ripas(s2tte);
-	s2tte = (ripas == RMI_EMPTY) ?
-		s2tte_create_assigned_empty(pa, RTT_PAGE_LEVEL) :
-		s2tte_create_valid(pa, RTT_PAGE_LEVEL);
-	ERROR("S8 ");
-
-	s2tte_write(&s2tt[wi.index], s2tte);
-	ERROR("S9 ");
-
-
-	ret = RMI_SUCCESS;
-	
-	buffer_unmap(s2tt);
-	granule_unlock(wi.g_llt);
-	buffer_unmap(rd);
-	granule_unlock(g_rd);
-
-	ERROR("Created S2 mapping for ipa %lx and pa %lx \n", ipa, pa);
 	return ret;
 }
 
@@ -1157,22 +1086,17 @@ unsigned long smc_data_create(unsigned long data_addr,
 {
 	struct granule *g_src;
 	unsigned long ret;
-	if (data_addr == 0x5000b000){
-		//create s2 entry 
-		ERROR("Create S2 entry");
-		ret = create_s2_entry(rd_addr, data_addr, map_addr);
-	}else{
-		if (measure_flag(flags) != RMI_NO_MEASURE_CONTENT && measure_flag(flags) != RMI_MEASURE_CONTENT) {
-			return RMI_ERROR_INPUT;
-		}
-
-		g_src = find_granule(src_addr);
-		if ((g_src == NULL) || (g_src->state != GRANULE_STATE_NS)) {
-			return RMI_ERROR_INPUT;
-		}
-
-		ret = data_create(data_addr, rd_addr, map_addr, g_src, flags);
+	if (measure_flag(flags) != RMI_NO_MEASURE_CONTENT && measure_flag(flags) != RMI_MEASURE_CONTENT) {
+		return RMI_ERROR_INPUT;
 	}
+
+	g_src = find_granule(src_addr);
+	if ((g_src == NULL) || (g_src->state != GRANULE_STATE_NS)) {
+		return RMI_ERROR_INPUT;
+	}
+
+	ret = data_create(data_addr, rd_addr, map_addr, g_src, flags);
+
 	return ret;
 }
 

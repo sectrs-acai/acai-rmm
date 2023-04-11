@@ -533,20 +533,21 @@ static bool handle_realm_rsi(struct rec *rec, struct rmi_rec_exit *rec_exit)
 		res = handle_rsi_dev_mem(rec, rec_exit);
 		WARN("PA %lx\n",rec->regs[1]);
 		
-		rec_exit->exit_reason = RMI_EXIT_DEV_MEM;
-		ret_to_rec = false;
 		rec->regs[0] = res.smc_result;
-
+		
+		//TODO(Supraja, Benedict): commenting these as we no longer need to return to host. Tests fail otherwise
+		//rec_exit->exit_reason = RMI_EXIT_HOST_CALL;
+		// ret_to_rec = false;
 		// Do we need it ???
 		// Probably yes, without it we get "invalid RSI function_id = 0" in the RMM log
-		advance_pc();
+		// advance_pc();
 		// reg[1] PA
 		// reg[2] IOVA
 		// reg[3] Stream ID
-		rec_exit->gprs[1] = rec->regs[3]; 
-		// IOVA = IPA of the page, so we can trigger the testengine from within the realm.
-		rec_exit->gprs[2] = rec->regs[1];
-		rec_exit->gprs[3] = 31;
+		// rec_exit->gprs[1] = rec->regs[3]; 
+		// // IOVA = IPA of the page, so we can trigger the testengine from within the realm.
+		// rec_exit->gprs[2] = rec->regs[1];
+		// rec_exit->gprs[3] = 31;
 
 		break;
 	}
