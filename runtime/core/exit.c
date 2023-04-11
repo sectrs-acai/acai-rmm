@@ -533,14 +533,14 @@ static bool handle_realm_rsi(struct rec *rec, struct rmi_rec_exit *rec_exit)
 		res = handle_rsi_dev_mem(rec, rec_exit);
 		WARN("PA %lx\n",rec->regs[1]);
 		
+		ret_to_rec = true;
 		rec->regs[0] = res.smc_result;
-		
-		//TODO(Supraja, Benedict): commenting these as we no longer need to return to host. Tests fail otherwise
-		//rec_exit->exit_reason = RMI_EXIT_HOST_CALL;
-		// ret_to_rec = false;
+		break;
 		// Do we need it ???
 		// Probably yes, without it we get "invalid RSI function_id = 0" in the RMM log
-		// advance_pc();
+		// Only needed when we exit to the host????????
+		advance_pc();
+		rec_exit->exit_reason = RMI_EXIT_DEV_MEM;
 		// reg[1] PA
 		// reg[2] IOVA
 		// reg[3] Stream ID
