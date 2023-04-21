@@ -527,6 +527,7 @@ static bool handle_realm_rsi(struct rec *rec, struct rmi_rec_exit *rec_exit)
 		break;
 	}
 	case SMC_RSI_DEV_MEM: {
+		CCA_RSI_DEV_MEM();
 		struct rsi_delegate_dev_mem_result res;
 		WARN("handle_rsi_dev_mem \n");
 		WARN("IPA %lx\n",rec->regs[1]);

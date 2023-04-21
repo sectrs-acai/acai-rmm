@@ -1,6 +1,6 @@
 #include <rsi-walk.h>
 #include <smc-rmi.h>
-
+#include <benchmark.h>
 struct rsi_delegate_dev_mem_result {
 	/*
 	 * Result of RTT walk performed by RSI command.

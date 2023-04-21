@@ -36,6 +36,7 @@ target_link_libraries(rmm-runtime
 target_include_directories(rmm-runtime
     PRIVATE "include")
 
+target_include_directories(rmm-runtime PUBLIC "../benchmark")
 if(NOT RMM_ARCH STREQUAL fake_host)
     target_sources(rmm-runtime
         PRIVATE "core/aarch64/entry.S"
