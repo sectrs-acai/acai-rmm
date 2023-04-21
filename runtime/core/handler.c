@@ -14,6 +14,7 @@
 #include <smc.h>
 #include <status.h>
 #include <utils_def.h>
+#include <benchmark.h>
 
 #define STATUS_HANDLER(_id)[_id] = #_id
 
@@ -219,6 +220,7 @@ void handle_ns_smc(unsigned long function_id,
 		   unsigned long arg5,
 		   struct smc_result *ret)
 {
+	CCA_SMC_FROM_NS();
 	unsigned long handler_id;
 	const struct smc_handler *handler = NULL;
 

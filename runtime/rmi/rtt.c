@@ -16,6 +16,7 @@
 #include <string.h>
 #include <table.h>
 #include <debug.h>
+#include <benchmark.h>
 
 //TODO(Supraja) : move these to a header file as macros 
 unsigned long measure_flag(unsigned long flags){
@@ -1072,9 +1073,11 @@ out_unmap_rd:
 			ERROR("dev granule checks failed");
 			return RMI_ERROR_INPUT;
 		}
+		CCA_RMI_DEV_ATTACH();
 		smc_attach_dev(data_addr);
 		data = granule_map(g_data, SLOT_DELEGATED);
 		rd = granule_map(g_rd, SLOT_RD);
+		CCA_RMI_DEV_ATTACH_ATTEST()
 		data_granule_measure(rd, data, map_addr, measure_flag(flags));
 		buffer_unmap(rd);
 		buffer_unmap(data);

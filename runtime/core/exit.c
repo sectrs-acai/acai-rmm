@@ -32,6 +32,7 @@
 #include <sve.h>
 #include <sysreg_traps.h>
 #include <table.h>
+#include <benchmark.h>
 
 void save_fpu_state(struct fpu_state *fpu);
 void restore_fpu_state(struct fpu_state *fpu);
@@ -352,6 +353,7 @@ static void return_result_to_realm(struct rec *rec, struct smc_result result)
  */
 static bool handle_realm_rsi(struct rec *rec, struct rmi_rec_exit *rec_exit)
 {
+	CCA_RSI_FROM_REALM();
 	bool ret_to_rec = true;	/* Return to Realm */
 	unsigned int function_id = rec->regs[0];
 
@@ -499,6 +501,7 @@ static bool handle_realm_rsi(struct rec *rec, struct rmi_rec_exit *rec_exit)
 		break;
 	}
 	case SMC_RSI_HOST_CALL: {
+		CCA_RSI_HOST_CALL();
 		struct rsi_host_call_result res;
 		res = handle_rsi_host_call(rec, rec_exit);
 
@@ -771,6 +774,7 @@ static bool handle_exception_irq_lel(struct rec *rec, struct rmi_rec_exit *rec_e
 /* Returns 'true' when returning to Realm (S) and false when to NS */
 bool handle_realm_exit(struct rec *rec, struct rmi_rec_exit *rec_exit, int exception)
 {
+
 	switch (exception) {
 	case ARM_EXCEPTION_SYNC_LEL: {
 		bool ret;
