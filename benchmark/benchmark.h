@@ -20,7 +20,11 @@ CCA_MARKER(0x108); \
 CCA_MARKER(0x109); \
 
 #define CCA_RSI_HOST_CALL() \
-CCA_MARKER(0x109); \
+CCA_MARKER(0x10A); \
+
+//This marker is added directly in assembly as mov XZR, #0x10B
+#define CCA_SMC_MONITOR_CALL() \
+CCA_MARKER(0x10B); \
 
 #endif
 
