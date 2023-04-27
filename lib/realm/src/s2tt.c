@@ -17,7 +17,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <table.h>
-
+#include <benchmark.h>
 /*
  * For prototyping we assume 4K pages
  */
