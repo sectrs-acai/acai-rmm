@@ -16,9 +16,11 @@
 #include <string.h>
 #include <table.h>
 #include <vmid.h>
+#include <benchmark.h>
 
 unsigned long smc_realm_activate(unsigned long rd_addr)
 {
+	smc_realm_activate_cca_marker();
 	struct rd *rd;
 	struct granule *g_rd;
 	unsigned long ret;
@@ -255,6 +257,7 @@ out_err:
 unsigned long smc_realm_create(unsigned long rd_addr,
 			       unsigned long realm_params_addr)
 {
+	smc_realm_create_cca_marker();	
 	struct granule *g_rd, *g_rtt_base;
 	struct rd *rd;
 	struct rmi_realm_params p;
@@ -352,6 +355,8 @@ static unsigned long total_root_rtt_refcount(struct granule *g_rtt,
 
 unsigned long smc_realm_destroy(unsigned long rd_addr)
 {
+	smc_realm_destroy_cca_marker();
+
 	struct granule *g_rd;
 	struct granule *g_rtt;
 	struct rd *rd;

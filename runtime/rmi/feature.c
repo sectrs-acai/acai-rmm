@@ -9,6 +9,7 @@
 #include <smc-handler.h>
 #include <smc-rmi.h>
 #include <status.h>
+#include <benchmark.h>
 
 static unsigned long get_feature_register_0(void)
 {
@@ -31,6 +32,8 @@ static unsigned long get_feature_register_0(void)
 void smc_read_feature_register(unsigned long index,
 				struct smc_result *ret_struct)
 {
+	smc_read_feature_register_cca_marker();
+
 	switch (index) {
 	case RMM_FEATURE_REGISTER_0_INDEX:
 		ret_struct->x[0] = RMI_SUCCESS;

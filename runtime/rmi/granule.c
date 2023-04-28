@@ -8,9 +8,12 @@
 #include <smc-handler.h>
 #include <smc-rmi.h>
 #include <smc.h>
+#include <benchmark.h>
 
 unsigned long smc_granule_delegate(unsigned long addr)
 {
+	smc_granule_delegate_cca_marker();
+
 	struct granule *g;
 
 	g = find_lock_granule(addr, GRANULE_STATE_NS);
@@ -28,6 +31,8 @@ unsigned long smc_granule_delegate(unsigned long addr)
 
 unsigned long smc_granule_undelegate(unsigned long addr)
 {
+	smc_granule_undelegate_cca_marker();
+
 	struct granule *g;
 
 	g = find_lock_granule(addr, GRANULE_STATE_DELEGATED);

@@ -15,7 +15,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <table.h>
-
+#include <benchmark.h>
 /*
  * Validate the map_addr value passed to RMI_RTT_* and RMI_DATA_* commands.
  */
@@ -83,6 +83,7 @@ unsigned long smc_rtt_create(unsigned long rtt_addr,
 			     unsigned long map_addr,
 			     unsigned long ulevel)
 {
+	smc_rtt_create_cca_marker();
 	struct granule *g_rd;
 	struct granule *g_tbl;
 	struct rd *rd;
@@ -259,6 +260,8 @@ unsigned long smc_rtt_fold(unsigned long rtt_addr,
 			   unsigned long map_addr,
 			   unsigned long ulevel)
 {
+	smc_rtt_fold_cca_marker();
+
 	struct granule *g_rd;
 	struct granule *g_tbl;
 	struct rd *rd;
@@ -433,6 +436,7 @@ unsigned long smc_rtt_destroy(unsigned long rtt_addr,
 			      unsigned long map_addr,
 			      unsigned long ulevel)
 {
+	smc_rtt_destroy_cca_marker();
 	struct granule *g_rd;
 	struct granule *g_tbl;
 	struct rd *rd;
@@ -664,6 +668,8 @@ unsigned long smc_rtt_map_unprotected(unsigned long rd_addr,
 				      unsigned long ulevel,
 				      unsigned long s2tte)
 {
+	smc_rtt_map_unprotected_cca_marker();
+
 	long level = (long)ulevel;
 
 	if (!host_ns_s2tte_is_valid(s2tte, level)) {
@@ -677,6 +683,7 @@ unsigned long smc_rtt_unmap_unprotected(unsigned long rd_addr,
 					unsigned long map_addr,
 					unsigned long ulevel)
 {
+	smc_rtt_unmap_unprotected_cca_marker();
 	return map_unmap_ns(rd_addr, map_addr, (long)ulevel, 0UL, UNMAP_NS);
 }
 
@@ -685,6 +692,7 @@ void smc_rtt_read_entry(unsigned long rd_addr,
 			unsigned long ulevel,
 			struct smc_result *ret)
 {
+	smc_rtt_read_entry_cca_marker();
 	struct granule *g_rd, *g_rtt_root;
 	struct rd *rd;
 	struct rtt_walk wi;
@@ -931,6 +939,8 @@ unsigned long smc_data_create(unsigned long data_addr,
 			      unsigned long src_addr,
 			      unsigned long flags)
 {
+	smc_data_create_cca_marker();
+
 	struct granule *g_src;
 	unsigned long ret;
 
@@ -952,12 +962,15 @@ unsigned long smc_data_create_unknown(unsigned long data_addr,
 				      unsigned long rd_addr,
 				      unsigned long map_addr)
 {
+	smc_data_create_unknown_cca_marker();
 	return data_create(data_addr, rd_addr, map_addr, NULL, 0);
 }
 
 unsigned long smc_data_destroy(unsigned long rd_addr,
 			       unsigned long map_addr)
 {
+	smc_data_destroy_cca_marker();
+
 	struct granule *g_data;
 	struct granule *g_rd;
 	struct granule *g_table_root;
@@ -1104,6 +1117,7 @@ unsigned long smc_rtt_init_ripas(unsigned long rd_addr,
 				 unsigned long map_addr,
 				 unsigned long ulevel)
 {
+	smc_rtt_init_ripas_cca_marker();
 	struct granule *g_rd, *g_rtt_root;
 	struct rd *rd;
 	unsigned long ipa_bits;
@@ -1183,6 +1197,7 @@ unsigned long smc_rtt_set_ripas(unsigned long rd_addr,
 				unsigned long ulevel,
 				unsigned long uripas)
 {
+	smc_rtt_set_ripas_cca_marker();
 	struct granule *g_rd, *g_rec, *g_rtt_root;
 	struct rec *rec;
 	struct rd *rd;
