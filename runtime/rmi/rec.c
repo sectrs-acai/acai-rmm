@@ -20,6 +20,7 @@
 #include <smc-rmi.h>
 #include <smc.h>
 #include <spinlock.h>
+#include <benchmark.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -188,6 +189,7 @@ unsigned long smc_rec_create(unsigned long rec_addr,
 	unsigned long ret;
 	bool ns_access_ok;
 	unsigned int num_rec_aux;
+	smc_rec_create_cca_marker();
 
 	g_rec_params = find_granule(rec_params_addr);
 	if ((g_rec_params == NULL) || (g_rec_params->state != GRANULE_STATE_NS)) {
@@ -306,6 +308,7 @@ unsigned long smc_rec_destroy(unsigned long rec_addr)
 	struct granule *g_rec;
 	struct granule *g_rd;
 	struct rec *rec;
+    smc_rec_destroy_cca_marker();
 
 	/* REC should not be destroyed if refcount != 0 */
 	g_rec = find_lock_unused_granule(rec_addr, GRANULE_STATE_REC);
