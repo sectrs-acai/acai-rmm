@@ -19,6 +19,7 @@
 #include <smc-rsi.h>
 #include <smc.h>
 #include <timers.h>
+#include <benchmark.h>
 
 static void reset_last_run_info(struct rec *rec)
 {
@@ -166,6 +167,7 @@ unsigned long smc_rec_enter(unsigned long rec_addr,
 	struct rmi_rec_run rec_run;
 	unsigned long realm_state, ret;
 	bool success;
+    smc_rec_enter_cca_marker();
 
 	/*
 	 * The content of `rec_run.exit` shall be returned to the host.
