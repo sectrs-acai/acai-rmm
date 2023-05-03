@@ -35,7 +35,7 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 
 		granule_lock(rec->realm_info.g_rd, GRANULE_STATE_RD);
 		rd = granule_map(rec->realm_info.g_rd, SLOT_RD);
-
+		int size_del = 0;
 		for(int i = 0; i < size; i++){
 			struct s2_walk_result walk_res;
 			enum s2_walk_status walk_status;
@@ -50,26 +50,29 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 					res.walk_result.rtt_level = walk_res.rtt_level;
 				}
 				ERROR("Walk failed in RSI deleagate dev PAS");
-				goto out_unmap_rd;
+				granule_unlock(walk_res.llt);
+				continue;
 			}
 
 			if (walk_status == WALK_INVALID_PARAMS) {
 				/* Return error to Realm */
 				res.smc_result = RSI_ERROR_INPUT;
 				ERROR("Walk failed : invalid params");
-				goto out_unmap_rd;
+				granule_unlock(walk_res.llt);
+				continue;
 			}
 			grs[i] = find_granule(walk_res.pa);
 			pas[i] = walk_res.pa;
 			ipas[i] = ipa; 
+			size_del = size_del + 1;
 			ipa += GRANULE_SIZE;
 			// ERROR("DEV PAS: %lu\n\n\n", walk_res.pa);
 			granule_lock(grs[i], GRANULE_STATE_DATA);
 			granule_unlock(walk_res.llt);
 		}
 		//Make SMC call to delegate dev pas on the granule now
-		for(int i = 0; i < size; i++){
-			INFO("calling smc_granule_delegate_dev ipa: %lx | delegate_flag: %lx\n",ipa, delegate_flag);
+		for(int i = 0; i < size_del; i++){
+			INFO("calling smc_granule_delegate_dev ipa: %lx | delegate_flag: %lx\n",ipas[i], delegate_flag);
 			res.smc_result = smc_granule_delegate_dev(pas[i], delegate_flag, ipas[i]);
 			//res.smc_result = RSI_SUCCESS;
 			if (res.smc_result != RSI_SUCCESS){
@@ -82,12 +85,12 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 		// rec->regs[3] = walk_res.pa;
         //TODO[Supraja, Benedict] : add smc call to create S2 table entry for SMMU.
 		// * BENE: done through the exit to HV.
-		for(int i = 0; i < size; i++){
+		for(int i = 0; i < size_del; i++){
 			granule_unlock(grs[i]);
 		}
 		
-		out_unmap_rd:
-			buffer_unmap(rd);
-			granule_unlock(rec->realm_info.g_rd);
+		// out_unmap_rd:
+		buffer_unmap(rd);
+		granule_unlock(rec->realm_info.g_rd);
         return res;
 }
