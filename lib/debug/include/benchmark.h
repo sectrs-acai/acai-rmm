@@ -2,7 +2,30 @@
 #define RMM_CCA_BENCHMARK_H_
 
 #define STR(s) #s
+
+#define MICRO_BENCH 1
+
+#ifndef MICRO_BENCH
 #define CCA_MARKER(marker) __asm__ volatile("MOV XZR, " STR(marker))
+#define CCA_BENCHMARK_START
+#define CCA_BENCHMARK_STOP
+
+#else
+#define CCA_FLUSH __asm__ volatile("ISB");
+#define CCA_MARKER(marker) CCA_FLUSH __asm__ volatile("MOV XZR, " STR(marker))
+#define CCA_TRACE_START  __asm__ volatile("HLT 0x1337");
+#define CCA_TRACE_STOP __asm__ volatile("HLT 0x1337");
+
+#define CCA_BENCHMARK_START                                             \
+  CCA_TRACE_START;                                                             \
+  CCA_FLUSH;                                                                             \
+  CCA_MARKER(0x1)
+
+#define CCA_BENCHMARK_STOP                                                     \
+  CCA_MARKER(0x2);                                                             \
+  CCA_FLUSH;                                                                             \
+  CCA_TRACE_STOP
+#endif
 
 #define CCA_RSI_DEV_MEM() \
 CCA_MARKER(0x105); \
@@ -53,6 +76,14 @@ CCA_MARKER(0x200); \
 #define smc_rtt_init_ripas_cca_marker() CCA_MARKER(0x146)
 #define smc_rtt_set_ripas_cca_marker() CCA_MARKER(0x147)
 
+#ifdef MICRO_BENCH
+#define RMI_REALM_CREATE_START() CCA_MARKER(0x1040)
+#define RMI_REALM_CREATE_STOP() CCA_MARKER(0x1041)
+
+//TODO : Not used now. Add it later for single benchmark. 
+#define RSI_DEL_DEV_MEM_START() CCA_MARKER(0x1041)
+#define RSI_DEL_DEV_MEM_STOP() CCA_MARKER(0x1041)
+#endif
 
 #endif
 
