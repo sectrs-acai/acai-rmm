@@ -3,7 +3,7 @@
 
 #define STR(s) #s
 
-#define MICRO_BENCH 1
+// #define MICRO_BENCH 1
 
 #ifndef MICRO_BENCH
 #define CCA_MARKER(marker) __asm__ volatile("MOV XZR, " STR(marker))
@@ -83,6 +83,9 @@ CCA_MARKER(0x200); \
 //TODO : Not used now. Add it later for single benchmark. 
 #define RSI_DEL_DEV_MEM_START() CCA_MARKER(0x1041)
 #define RSI_DEL_DEV_MEM_STOP() CCA_MARKER(0x1041)
+#else
+#define RMI_REALM_CREATE_START() 
+#define RMI_REALM_CREATE_STOP() 
 #endif
 
 #endif
