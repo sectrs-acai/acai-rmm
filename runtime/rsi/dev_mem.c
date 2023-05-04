@@ -30,7 +30,7 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 
 		if (!GRANULE_ALIGNED(ipa) || !addr_in_rec_par(rec, ipa)) {
 			res.smc_result = RSI_ERROR_INPUT;
-			ERROR("[SMC_RSI_DEV_MEM] IPA is invalid \n\n");
+            INFO("[SMC_RSI_DEV_MEM] IPA is invalid \n\n");
 		}
 
 		granule_lock(rec->realm_info.g_rd, GRANULE_STATE_RD);
@@ -49,7 +49,7 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 					res.walk_result.abort = true;
 					res.walk_result.rtt_level = walk_res.rtt_level;
 				}
-				ERROR("Walk failed in RSI deleagate dev PAS");
+				INFO("Walk failed in RSI deleagate dev PAS");
 				granule_unlock(walk_res.llt);
 				continue;
 			}
@@ -57,7 +57,7 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 			if (walk_status == WALK_INVALID_PARAMS) {
 				/* Return error to Realm */
 				res.smc_result = RSI_ERROR_INPUT;
-				ERROR("Walk failed : invalid params");
+                INFO("Walk failed : invalid params");
 				granule_unlock(walk_res.llt);
 				continue;
 			}
@@ -75,11 +75,11 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 			INFO("calling smc_granule_delegate_dev ipa: %lx | delegate_flag: %lx\n",ipas[i], delegate_flag);
 			res.smc_result = smc_granule_delegate_dev(pas[i], delegate_flag, ipas[i]);
 			//res.smc_result = RSI_SUCCESS;
-			if (res.smc_result != RSI_SUCCESS){
-				ERROR("smc_granule_delegate_dev failed\n");
-			}else{
-				INFO("Success delegating dev mem at pa %lx ", pas[i]);
-			}
+			// if (res.smc_result != RSI_SUCCESS){
+			// 	ERROR("smc_granule_delegate_dev failed\n");
+			// }else{
+			// 	INFO("Success delegating dev mem at pa %lx ", pas[i]);
+			// }
 			if(delegate_flag){
 				break;
 			}

@@ -13,8 +13,8 @@
 #else
 #define CCA_FLUSH __asm__ volatile("ISB");
 #define CCA_MARKER(marker) CCA_FLUSH __asm__ volatile("MOV XZR, " STR(marker))
-#define CCA_TRACE_START  __asm__ volatile("HLT 0x1337");
-#define CCA_TRACE_STOP __asm__ volatile("HLT 0x1337");
+#define CCA_TRACE_START  /*__asm__ volatile("HLT 0x1337")*/;
+#define CCA_TRACE_STOP /*__asm__ volatile("HLT 0x1337") */;
 
 #define CCA_BENCHMARK_START                                             \
   CCA_TRACE_START;                                                             \
