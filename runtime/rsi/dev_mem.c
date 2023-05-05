@@ -80,6 +80,9 @@ struct rsi_delegate_dev_mem_result handle_rsi_dev_mem(struct rec *rec, struct rm
 			}else{
 				INFO("Success delegating dev mem at pa %lx ", pas[i]);
 			}
+			if(delegate_flag){
+				break;
+			}
 		}
 		// Overwrite ipa with real PA
 		// rec->regs[3] = walk_res.pa;
